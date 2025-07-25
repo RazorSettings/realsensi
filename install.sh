@@ -1,23 +1,34 @@
 #!/data/data/com.termux/files/usr/bin/bash
-clear
 
-echo -e "\033[1;92m[•] AUTO RUN INSTALL REALSENSI\033[0m"
-echo ""
-echo -e "\033[1;94m[•] Memeriksa dan menginstall module yang dibutuhkan...\033[0m"
+# ================= AUTO RUN INSTALL REALSENSI =================
 
-modules=(requests rich colorama urllib3)
+spinner() {
+    local pid=$!
+    local delay=0.1
+    local spinstr='|/-\'
+    printf "Installing dependencies... "
+    while [ "$(ps a | awk '{print $1}' | grep $pid)" ]; do
+        local temp=${spinstr#?}
+        printf " [%c]  " "$spinstr"
+        local spinstr=$temp${spinstr%"$temp"}
+        sleep $delay
+        printf "\b\b\b\b\b\b"
+    done
+    printf "    \b\b\b\b"
+    echo ""
+}
 
-for module in "${modules[@]}"; do
-    python -c "import $module" 2>/dev/null
-    if [ $? -ne 0 ]; then
-        echo "[!] Module '$module' belum terpasang. Menginstall..."
-        yes | pip install $module
-    else
-        echo "[✓] Module '$module' sudah terpasang."
-    fi
-done
+install_modules() {
+    pkg update -y && pkg upgrade -y && pkg install python -y && pkg install wget -y && pkg install curl -y &> /dev/null &
+    spinner
 
-echo ""
-echo -e "\033[1;92m[✓] Instalasi selesai. Menjalankan tools...\033[0m"
-chmod +x realsensi.so
-./realsensi.so
+    pip install --upgrade pip &> /dev/null &
+    spinner
+
+    pip install requests tqdm rich &> /dev/null &
+    spinner
+
+    echo "[✔️] Install complete. Jalankan: chmod +x realsensi.so && ./realsensi.so"
+}
+
+install_modules
