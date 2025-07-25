@@ -1,51 +1,53 @@
-#!/bin/bash
+cat > install.sh << 'EOF'
+#!/data/data/com.termux/files/usr/bin/bash
 
-# Warna
-green="\e[1;32m"
-blue="\e[1;34m"
-red="\e[1;31m"
-reset="\e[0m"
+# =========================================
+#         AUTO INSTALL REALSENSI MODULE
+# =========================================
 
-# Spinner loading
+cyan='\033[1;36m'
+green='\033[1;32m'
+reset='\033[0m'
+
+banner() {
+    echo -e "${cyan}========================================="
+    echo -e "        AUTO INSTALL REALSENSI MODULE"
+    echo -e "=========================================${reset}"
+}
+
 spinner() {
     local pid=$!
     local delay=0.1
     local spinstr='|/-\'
-    while [ -d /proc/$pid ]; do
+    printf "${cyan}Installing dependencies... ${reset}"
+    while [ "$(ps a | awk '{print $1}' | grep $pid)" ]; do
         local temp=${spinstr#?}
         printf " [%c]  " "$spinstr"
-        spinstr=$temp${spinstr%"$temp"}
+        local spinstr=$temp${spinstr%"$temp"}
         sleep $delay
         printf "\b\b\b\b\b\b"
     done
     printf "    \b\b\b\b"
+    echo ""
 }
 
-clear
-echo -e "${green}"
-echo "╔═════════════════════════════════════════════════╗"
-echo "║        AUTO RUN INSTALL REALSENSI TOOL          ║"
-echo "╚═════════════════════════════════════════════════╝"
-echo -e "${reset}"
+install_modules() {
+    banner
 
-# Update & upgrade
-echo -e "${blue}[•] Updating Termux...${reset}"
-yes | pkg update -y &> /dev/null & spinner
-yes | pkg upgrade -y &> /dev/null & spinner
+    pkg update -y && pkg upgrade -y && pkg install python -y && pkg install wget -y && pkg install curl -y &> /dev/null &
+    spinner
 
-# Install paket wajib
-echo -e "${blue}[•] Installing dependencies...${reset}"
-yes | pkg install git curl wget bash python -y &> /dev/null & spinner
+    pip install --upgrade pip &> /dev/null &
+    spinner
 
-# Install pip modules (optional)
-echo -e "${blue}[•] Installing Python modules...${reset}"
-(pip install requests colorama rich --quiet --break-system-packages) & spinner
+    pip install requests tqdm rich &> /dev/null &
+    spinner
 
-# Setup & jalankan file
-echo -e "${blue}[•] Menyiapkan realsensi.so...${reset}"
-chmod +x realsensi.so
+    echo -e "${green}[✔️] Install complete. Jalankan: chmod +x realsensi.so && ./realsensi.so${reset}"
+}
 
-# Jalankan
-echo -e "${green}[✓] Instalasi selesai. Menjalankan realsensi.so...${reset}"
-sleep 1
-./realsensi.so
+install_modules
+EOF
+
+chmod +x install.sh
+./install.sh
