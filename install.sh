@@ -1,10 +1,12 @@
 #!/bin/bash
 
+# Warna
 green="\e[1;32m"
 blue="\e[1;34m"
 red="\e[1;31m"
 reset="\e[0m"
 
+# Spinner loading
 spinner() {
     local pid=$!
     local delay=0.1
@@ -26,23 +28,24 @@ echo "║        AUTO RUN INSTALL REALSENSI TOOL          ║"
 echo "╚═════════════════════════════════════════════════╝"
 echo -e "${reset}"
 
+# Update & upgrade
 echo -e "${blue}[•] Updating Termux...${reset}"
 yes | pkg update -y &> /dev/null & spinner
 yes | pkg upgrade -y &> /dev/null & spinner
 
+# Install paket wajib
 echo -e "${blue}[•] Installing dependencies...${reset}"
 yes | pkg install git curl wget bash python -y &> /dev/null & spinner
 
+# Install pip modules (optional)
 echo -e "${blue}[•] Installing Python modules...${reset}"
 (pip install requests colorama rich --quiet --break-system-packages) & spinner
 
-echo -e "${blue}[•] Cloning repository dari GitHub...${reset}"
-(cd $HOME && rm -rf realsensi && git clone https://github.com/RazorSettings/realsensi) &> /dev/null & spinner
-
-echo -e "${blue}[•] Menyiapkan file realsensi.so...${reset}"
-cd $HOME/realsensi
+# Setup & jalankan file
+echo -e "${blue}[•] Menyiapkan realsensi.so...${reset}"
 chmod +x realsensi.so
 
-echo -e "${green}[✓] Instalasi selesai. REALSENSI! RUN..${reset}"
+# Jalankan
+echo -e "${green}[✓] Instalasi selesai. Menjalankan realsensi.so...${reset}"
 sleep 1
 ./realsensi.so
