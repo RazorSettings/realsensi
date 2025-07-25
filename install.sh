@@ -1,39 +1,51 @@
-cat > install.sh << EOF
-#!/data/data/com.termux/files/usr/bin/bash
+#!/bin/bash
 
-# ================= AUTO RUN INSTALL REALSENSI =================
+# Warna
+green="\e[1;32m"
+blue="\e[1;34m"
+red="\e[1;31m"
+reset="\e[0m"
 
+# Spinner loading
 spinner() {
-    local pid=\$!
+    local pid=$!
     local delay=0.1
-    local spinstr='|/-\\'
-    printf "Installing dependencies... "
-    while [ "\$(ps a | awk '{print \$1}' | grep \$pid)" ]; do
-        local temp=\${spinstr#?}
-        printf " [%c]  " "\$spinstr"
-        local spinstr=\$temp\${spinstr%"\$temp"}
-        sleep \$delay
+    local spinstr='|/-\'
+    while [ -d /proc/$pid ]; do
+        local temp=${spinstr#?}
+        printf " [%c]  " "$spinstr"
+        spinstr=$temp${spinstr%"$temp"}
+        sleep $delay
         printf "\b\b\b\b\b\b"
     done
     printf "    \b\b\b\b"
-    echo ""
 }
 
-install_modules() {
-    pkg update -y && pkg upgrade -y && pkg install python -y && pkg install wget -y && pkg install curl -y &> /dev/null &
-    spinner
+clear
+echo -e "${green}"
+echo "╔═════════════════════════════════════════════════╗"
+echo "║        AUTO RUN INSTALL REALSENSI TOOL          ║"
+echo "╚═════════════════════════════════════════════════╝"
+echo -e "${reset}"
 
-    pip install --upgrade pip &> /dev/null &
-    spinner
+# Update & upgrade
+echo -e "${blue}[•] Updating Termux...${reset}"
+yes | pkg update -y &> /dev/null & spinner
+yes | pkg upgrade -y &> /dev/null & spinner
 
-    pip install requests tqdm rich &> /dev/null &
-    spinner
+# Install paket wajib
+echo -e "${blue}[•] Installing dependencies...${reset}"
+yes | pkg install git curl wget bash python -y &> /dev/null & spinner
 
-    echo "[✔️] Install complete. Jalankan: chmod +x realsensi.so && ./realsensi.so"
-}
+# Install pip modules (optional)
+echo -e "${blue}[•] Installing Python modules...${reset}"
+(pip install requests colorama rich --quiet --break-system-packages) & spinner
 
-install_modules
-EOF
+# Setup & jalankan file
+echo -e "${blue}[•] Menyiapkan realsensi.so...${reset}"
+chmod +x realsensi.so
 
-chmod +x install.sh
-./install.sh
+# Jalankan
+echo -e "${green}[✓] Instalasi selesai. Menjalankan realsensi.so...${reset}"
+sleep 1
+./realsensi.so
